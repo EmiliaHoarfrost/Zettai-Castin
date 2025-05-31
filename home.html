@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zettaicastin</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+  <style>
+    /* hide html & markdown export buttons */
+    #save-log-md, #save-log-html { display: none; }
+    html, body { height: 100%; margin: 0; }
+    #map { height: calc(100vh - 64px); width: 100%; }
+    .note-popup { background: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 0.75rem; width: 240px; font-family: system-ui, sans-serif; position: relative; }
+    .note-popup textarea { width: 100%; border: 1px solid #ccc; border-radius: 0.375rem; padding: 0.3rem 0.5rem; font-size: 0.875rem; resize: none; min-height: 80px; font-family: inherit; color: #111; }
+    .note-popup button.close-btn { position: absolute; top: 0.25rem; right: 0.25rem; background: transparent; border: none; font-size: 1.2rem; line-height: 1; cursor: pointer; color: #999; transition: color 0.2s; }
+    .note-popup button.close-btn:hover { color: #333; }
+    #btn-toggle-sat { cursor: pointer; display: flex; align-items: center; color: #6366f1; padding-bottom: 0.25rem; border-bottom: 2px solid transparent; transition: border-color 0.2s; }
+    #btn-toggle-sat.active { border-color: #6366f1; font-weight: 600; }
+    #btn-toggle-sat:hover { border-color: #a5b4fc; }
+    .selected-marker { filter: drop-shadow(0 0 5px rgba(99,102,241,0.7)); transform: scale(1.2); transition: transform 0.2s, filter 0.2s; }
+    .key-highlight { background-color: #2d0ff2; padding: 0 0.15rem; border-radius: 0.2rem; font-family: monospace; font-weight: normal; color: white; }
+    .key-highlight .key { font-weight: 700; color: black; padding: 0 0.25rem; background: white; border-radius: 0.15rem; margin-right: 0.15rem; user-select: none; display: inline-block; min-width: 16px; text-align: center; }
+    /* Log section split for textarea and preview side-by-side */
+    #section-log { display: flex; flex-direction: column; gap: 1rem; max-width: 900px; }
+    #log-container { display: flex; gap: 1rem; }
+    #log-textarea { flex: 1; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; height: 240px; font-family: monospace; resize: vertical; overflow-y: auto; background: white; color: #111; font-size: 1rem; }
+    #log-preview { flex: 1; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem 1rem; height: 240px; overflow-y: auto; background: white; color: #111; font-size: 1rem; }
+    #import-file { display: none; }
+  </style>
+</head>
+<body class="bg-gray-100 h-full flex flex-col">
+
+  <nav class="bg-white shadow-md fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-6 space-x-8">
+    <h1 class="text-xl font-bold text-indigo-700 select-none">Zettaicastin</h1>
+    <ul class="flex space-x-8 text-gray-700">
+      <li><button id="tab-map" class="tab-btn border-b-2 border-indigo-700  hover:border-indigo-400 pb-1 pb-1 font-semibold" aria-label="Map Tab">Map</button></li>
+      <li><button id="tab-log" class="tab-btn border-b-2 border-transparent hover:border-indigo-400 pb-1" aria-label="Log Tab">Log</button></li>
+      <li><button id="tab-about" class="tab-btn border-b-2 border-transparent hover:border-indigo-400 pb-1" aria-label="About Tab">About</button></li>
+      <li>
+        <button id="btn-toggle-sat" title="Toggle Satellite View" aria-label="Toggle Satellite View" class="tab-btn border-b-2 border-transparent hover:border-indigo-400 pb-1">
+          Satellite
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <main class="flex-grow pt-16 px-4">
+    <section id="section-map" class="w-full max-w-7xl mx-auto">
+      <div id="map" class="rounded-lg shadow-lg"></div>
+    </section>
+
+    <section id="section-about" class="hidden max-w-4xl mx-auto mt-8 text-gray-700">
+      <h2 class="text-2xl font-semibold mb-4">About Zettaicastin</h2>
+      <p class="mb-2">This is a simple interactive map-based note-taking app inspired by the Zettelkasten method. Click on the map to create notes pinned to real-world locations. Drag markers to reposition them.</p>
+      <p>Built with <strong>Leaflet.js</strong> for mapping, <strong>Tailwind CSS</strong> for styling, and vanilla JavaScript.</p>
+      <p><strong>Controls:</strong></p>
+      <ul class="list-disc pl-5 mb-4">
+        <li><span class="key-highlight"><span class="key">CLICK</span> note to select</span></li>
+        <li><span class="key-highlight"><span class="key">W</span> to add note at cursor</span></li>
+        <li><span class="key-highlight"><span class="key">X</span> to delete selected note</span></li>
+        <li><span class="key-highlight"><span class="key">C</span> to clear all notes</span></li>
+        <li><span class="key-highlight"><span class="key">S</span> to Satellite view</span></li>
+        <li><span class="key-highlight"><span class="key">M</span> to Map tab</span></li>
+        <li><span class="key-highlight"><span class="key">L</span> to Log tab</span></li>
+        <li><span class="key-highlight"><span class="key">A</span> to About tab</span></li>
+      </ul>
+      <p class="text-sm text-gray-600">Developed by <a href="https://github.com/EmiliaHoarfrost" target="_blank" class="text-indigo-600 underline">EmiliaHoarfrost</a>.</p>
+      <p class="text-sm text-gray-600 mt-1">The name <em>Zettaicastin</em> is a playful mix of Zettelkasten, zettai (絶対, Japanese for absolute!) and castin (casting) — displaying something upon a screen.</p>
+    </section>
+
+    <section id="section-log" class="hidden max-w-7xl mx-auto mt-8 text-gray-700">
+      <h2 class="text-2xl font-semibold mb-4">Write a Log Entry & GeoJSON</h2>
+      <div id="log-container" class="flex gap-4">
+        <textarea id="log-textarea" placeholder="Import? GeoJSON feature collection of markers will appear here." aria-label="Log text input"></textarea>
+        <div id="log-preview" aria-live="polite" aria-label="GeoJSON preview"></div>
+      </div>
+      <div id="log-controls" class="mt-4 space-x-2">
+        <button id="import-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Import JSON/TXT</button>
+        <input type="file" id="import-file" accept=".json,.txt" />
+        <button id="save-log-txt" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">Save as TXT</button>
+        <button id="save-log-json" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">Save as JSON</button>
+        <button id="save-log-md" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Save as Markdown</button>
+        <button id="save-log-html" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded">Save as HTML</button> 
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script>
+    // Map setup
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '© OpenStreetMap contributors' });
+    const sat = L.tileLayer("https://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", { maxZoom: 19, subdomains:['mt0','mt1','mt2','mt3'], attribution: '© Google Satellite' });
+    const map = L.map('map', { center: [48.8566, 2.3522], zoom: 13, layers: [osm] });
+
+    let markers = [];
+    let selectedMarker = null;
+    let lastMousePos = null;
+
+    document.getElementById('map').addEventListener('mousemove', function(e) {
+      const rect = e.target.getBoundingClientRect();
+      lastMousePos = L.point(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    const logTextarea = document.getElementById('log-textarea');
+    const logPreview = document.getElementById('log-preview');
+    const importFileInput = document.getElementById('import-file');
+
+    // Generate and update GeoJSON in log
+    function updateLogGeoJSON() {
+      const features = markers.map(m => ({
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [m.getLatLng().lng, m.getLatLng().lat] },
+        properties: { note: m.note || '' }
+      }));
+      const fc = { type: 'FeatureCollection', features };
+      logTextarea.value = JSON.stringify(fc, null, 2);
+      logPreview.innerHTML = `<pre>${JSON.stringify(fc, null, 2)}</pre>`;
+    }
+
+    function saveMarkers() {
+      const data = markers.map(m => ({ lat: m.getLatLng().lat, lng: m.getLatLng().lng, note: m.note || '' }));
+      localStorage.setItem('mapNotes', JSON.stringify(data));
+      updateLogGeoJSON();
+    }
+
+    function loadMarkers() {
+      const data = localStorage.getItem('mapNotes');
+      if (!data) return;
+      try {
+        const arr = JSON.parse(data);
+        arr.forEach(item => addMarker(item.lat, item.lng, item.note, true));
+      } catch (e) {
+        console.error("Failed to load markers:", e);
+      }
+      if (markers.length) markers.forEach(m => m.openPopup());
+    }
+
+    function clearMarkers() {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+      selectedMarker = null;
+      saveMarkers();
+    }
+
+    function createEditablePopupContent(marker) {
+      const container = document.createElement('div');
+      container.className = 'note-popup';
+
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = "Write your note here...";
+      textarea.value = marker.note || '';
+      container.appendChild(textarea);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close-btn'; closeBtn.title = 'Close'; closeBtn.innerHTML = '&times;';
+      closeBtn.onclick = () => { marker.note = textarea.value.trim(); marker.closePopup(); saveMarkers(); };
+      container.appendChild(closeBtn);
+
+      textarea.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); marker.note = textarea.value.trim(); marker.closePopup(); saveMarkers(); }});
+
+      return container;
+    }
+
+    function addMarker(lat, lng, note = '', openPopup = true) {
+      const marker = L.marker([lat, lng], { draggable: true });
+      marker.note = note;
+      marker.on('click', () => {
+        if (selectedMarker && selectedMarker !== marker) selectedMarker.setIcon(defaultIcon());
+        selectedMarker = marker;
+        updateMarkerHighlight();
+        marker.openPopup();
+      });
+      marker.on('dragend', () => saveMarkers());
+      marker.bindPopup(createEditablePopupContent(marker));
+      marker.addTo(map);
+      markers.push(marker);
+      if (openPopup) marker.openPopup();
+      saveMarkers();
+      return marker;
+    }
+
+    function updateMarkerHighlight() {
+      markers.forEach(m => {
+        const el = m.getElement(); if (!el) return;
+        if (m === selectedMarker) el.classList.add('selected-marker'); else el.classList.remove('selected-marker');
+      });
+    }
+
+    function defaultIcon() {
+      return L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png', shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+    }
+
+    // Import handling
+    document.getElementById('import-btn').addEventListener('click', () => importFileInput.click());
+    importFileInput.addEventListener('change', e => {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const content = reader.result;
+          let data = JSON.parse(content);
+          if (data.type === 'FeatureCollection' && data.features) {
+            // GeoJSON
+            clearMarkers();
+            data.features.forEach(f => addMarker(f.geometry.coordinates[1], f.geometry.coordinates[0], f.properties.note || '', false));
+          } else if (Array.isArray(data)) {
+            clearMarkers();
+            data.forEach(item => addMarker(item.lat, item.lng, item.note || '', false));
+          } else {
+            throw new Error('Unsupported file format');
+          }
+          saveMarkers();
+        } catch (err) {
+          alert('Failed to import file: ' + err.message);
+        }
+        importFileInput.value = null;
+      };
+      reader.readAsText(file);
+    });
+
+    // Export handlers
+    function download(dataStr, filename) {
+      const blob = new Blob([dataStr], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    document.getElementById('save-log-txt').onclick = () => download(logTextarea.value, 'markers.txt');
+    document.getElementById('save-log-json').onclick = () => download(logTextarea.value, 'markers.json');
+
+    // Tabs & Satellite toggle
+    const tabMap = document.getElementById('tab-map'), tabAbout = document.getElementById('tab-about'), tabLog = document.getElementById('tab-log');
+    const sectionMap = document.getElementById('section-map'), sectionAbout = document.getElementById('section-about'), sectionLog = document.getElementById('section-log');
+    const btnToggleSat = document.getElementById('btn-toggle-sat');
+    function activateTab(tabName) {
+      [tabMap, tabAbout, tabLog].forEach(btn => { btn.classList.remove('border-indigo-700','font-semibold'); btn.classList.add('border-transparent'); });
+      [sectionMap, sectionAbout, sectionLog].forEach(sec => sec.classList.add('hidden'));
+      if (tabName==='map') { sectionMap.classList.remove('hidden'); tabMap.classList.add('border-indigo-700','font-semibold'); if (selectedMarker) selectedMarker.openPopup(); }
+      else if (tabName==='about') { sectionAbout.classList.remove('hidden'); tabAbout.classList.add('border-indigo-700','font-semibold'); }
+      else if (tabName==='log') { sectionLog.classList.remove('hidden'); tabLog.classList.add('border-indigo-700','font-semibold'); }
+    }
+    tabMap.onclick=()=>activateTab('map'); tabAbout.onclick=()=>activateTab('about'); tabLog.onclick=(()=>activateTab('log'));
+    btnToggleSat.onclick=(()=>{ if(map.hasLayer(osm)){map.removeLayer(osm);map.addLayer(sat);btnToggleSat.classList.add('active');} else {map.removeLayer(sat);map.addLayer(osm);btnToggleSat.classList.remove('active');}});
+    window.addEventListener('keydown', e=>{ if(document.activeElement.tagName==='TEXTAREA') return; switch(e.key.toLowerCase()){ case 'w': if(lastMousePos){const latlng=map.containerPointToLatLng(lastMousePos);addMarker(latlng.lat,latlng.lng);} break; case 'x': if(selectedMarker){map.removeLayer(selectedMarker);markers=markers.filter(m=>m!==selectedMarker);selectedMarker=null;saveMarkers();} break; case 'c': clearMarkers(); break; case 's': btnToggleSat.click(); break; case 'm': activateTab('map'); break; case 'a': activateTab('about'); break; case 'l': activateTab('log'); break;} });
+    // Initialize
+    loadMarkers(); activateTab('map');
+  </script>
+</body>
+</html>
