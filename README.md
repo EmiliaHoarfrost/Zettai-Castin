@@ -7,7 +7,6 @@ Built with:
 - 🗺️ [Leaflet.js](https://leafletjs.com/) for map rendering  
 - 🎨 [Tailwind CSS](https://tailwindcss.com/) for styling  
 - 🧠 Vanilla JavaScript  
-- 📝 [Marked.js](https://marked.js.org/) for Markdown rendering
 
 ## ✨ Features
 
