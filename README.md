@@ -13,7 +13,7 @@ Built with:
 ## <picture>
   <source srcset="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4f8/512.webp" type="image/webp">
   <img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f4f8/512.gif" alt="📸" width="32" height="32">
-</picture> Screenshots
+</picture> ## Screenshots
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/8153eeba-9278-4d39-9b29-06354adc6e5d" alt="Screenshot 1" width="800" style="border-radius: 12px;"><br><br>
