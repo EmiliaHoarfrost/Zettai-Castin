@@ -6,7 +6,7 @@ Zettai for absolute in Japanese.
 
 Built with:
 
-- 🗺️ https://avatars.githubusercontent.com/u/2854298?s=200&v=4 [Leaflet.js](https://leafletjs.com/) for map rendering  
+- 🗺️ [Leaflet.js](https://leafletjs.com/) for map rendering  
 - 🎨 [Tailwind CSS](https://tailwindcss.com/) for styling  
 - 🧠 Vanilla **JavaScript**
  
