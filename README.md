@@ -11,11 +11,12 @@ Built with:
 - 🧠 Vanilla **JavaScript**
  
 ## 📷 Screenshots
-
-![image](https://github.com/user-attachments/assets/8153eeba-9278-4d39-9b29-06354adc6e5d)
-![image](https://github.com/user-attachments/assets/856fef36-7cd7-4a0b-a94a-9822fd360105)
-![image](https://github.com/user-attachments/assets/9a357997-06f9-4e41-b566-9f6ea2f8531c)
-![image](https://github.com/user-attachments/assets/9d137ee8-71b1-4d69-8316-ad18fe9dce0f)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/8153eeba-9278-4d39-9b29-06354adc6e5d" alt="Screenshot 1"><br>
+  <img src="https://github.com/user-attachments/assets/856fef36-7cd7-4a0b-a94a-9822fd360105" alt="Screenshot 2"><br>
+  <img src="https://github.com/user-attachments/assets/9a357997-06f9-4e41-b566-9f6ea2f8531c" alt="Screenshot 3"><br>
+  <img src="https://github.com/user-attachments/assets/9d137ee8-71b1-4d69-8316-ad18fe9dce0f" alt="Screenshot 4">
+</p>
 
 ## ✨ Features
 
