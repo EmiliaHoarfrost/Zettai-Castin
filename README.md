@@ -10,8 +10,7 @@ Built with:
 
 ## ✨ Features
 
-- 🖱️ Click on the map to create notes at real-world locations.
-- 📝 Edit and store rich text notes using Markdown.
+- 🖱️ Click on the map to move around real-world locations at global & local scales.
 - 📦 Save and export your notes as GeoJSON, JSON, or plain text.
 - 📁 Import existing notes from `.json` or `.txt` files.
 - 🔄 Toggle between standard and satellite map views.
