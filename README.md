@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/32c0d44a-fcc8-4d7e-b8a0-f92cf46da008)# ZettaiCastin
+# ZettaiCastin
 
 **ZettaiCastin** is an interactive web-based note-taking application using a map interface.
 Inspired by the **Zettelkasten** method, it allows users to pin and write notes on specific geographic locations.
