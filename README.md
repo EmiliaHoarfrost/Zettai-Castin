@@ -1,6 +1,8 @@
-# Zettai-Castin
+![image](https://github.com/user-attachments/assets/32c0d44a-fcc8-4d7e-b8a0-f92cf46da008)# ZettaiCastin
 
-**Zettai-Castin** is an interactive web-based note-taking application using a map interface. Inspired by the **Zettelkasten** method, it allows users to pin and write notes on specific geographic locations.
+**ZettaiCastin** is an interactive web-based note-taking application using a map interface.
+Inspired by the **Zettelkasten** method, it allows users to pin and write notes on specific geographic locations.
+Zettai for absolute in Japanese.
 
 Built with:
 
@@ -31,12 +33,12 @@ Built with:
 
 ## 📷 Screenshots
 
-<!-- Add screenshot images if available -->
-_(Coming soon...)_
+![image](https://github.com/user-attachments/assets/8153eeba-9278-4d39-9b29-06354adc6e5d)
+
 
 ## 🚀 Getting Started
 
-You can find an online version at http://zettaicastin.42dev.io,
+You can find an online version at zettaicastin.42dev.io,
 otherwise just open the `index.html` file in a web browser.
 No build process or server is required!
 
