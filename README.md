@@ -36,7 +36,7 @@ _(Coming soon...)_
 
 ## 🚀 Getting Started
 
-You can find an online version at zettaicastin.42dev.io,
+You can find an online version at http://zettaicastin.42dev.io,
 otherwise just open the `index.html` file in a web browser.
 No build process or server is required!
 
