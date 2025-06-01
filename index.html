@@ -15,7 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
-    /* hide html & markdown export buttons */
     #save-log-md, #save-log-html { display: none; }
     html, body { height: 100%; margin: 0; }
     #map { height: calc(100vh - 64px); width: 100%; }
@@ -29,7 +28,6 @@
     .selected-marker { filter: drop-shadow(0 0 5px rgba(99,102,241,0.7)); transform: scale(1.2); transition: transform 0.2s, filter 0.2s; }
     .key-highlight { background-color: #2d0ff2; padding: 0 0.15rem; border-radius: 0.2rem; font-family: monospace; font-weight: normal; color: white; }
     .key-highlight .key { font-weight: 700; color: black; padding: 0 0.25rem; background: white; border-radius: 0.15rem; margin-right: 0.15rem; user-select: none; display: inline-block; min-width: 16px; text-align: center; }
-    /* Log section split for textarea and preview side-by-side */
     #section-log { display: flex; flex-direction: column; gap: 1rem; max-width: 900px; }
     #log-container { display: flex; gap: 1rem; }
     #log-textarea { flex: 1; border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; height: 240px; font-family: monospace; resize: vertical; overflow-y: auto; background: white; color: #111; font-size: 1rem; }
@@ -64,19 +62,19 @@
       <p>Built with <strong>Leaflet.js</strong> for mapping, <strong>Tailwind CSS</strong> for styling, and vanilla JavaScript.</p>
       <p><strong>Controls:</strong></p>
       <ul class="list-disc pl-5 mb-4">
-        <li><span class="key-highlight"><span class="key">CLICK</span> note to select</span></li>
+        <li><span class="key-highlight"><span class="key">Click</span> note to select</span></li>
         <li><span class="key-highlight"><span class="key">W</span> to add note at cursor</span></li>
         <li><span class="key-highlight"><span class="key">X</span> to delete selected note</span></li>
         <li><span class="key-highlight"><span class="key">C</span> to clear all notes</span></li>
+		<li><span class="key-highlight"><span class="key">V</span> to Street View for selected note</span></li>
         <li><span class="key-highlight"><span class="key">S</span> to Satellite view</span></li>
-        <li><span class="key-highlight"><span class="key">M</span> to Map tab</span></li>
         <li><span class="key-highlight"><span class="key">L</span> to Log tab</span></li>
+        <li><span class="key-highlight"><span class="key">M</span> to Map tab</span></li>
         <li><span class="key-highlight"><span class="key">A</span> to About tab</span></li>
       </ul>
       <p class="text-sm text-gray-600">Developed by <a href="https://github.com/EmiliaHoarfrost" target="_blank" class="text-indigo-600 underline">EmiliaHoarfrost</a>.</p>
       <p class="text-sm text-gray-600 mt-1">The name <em>Zettaicastin</em> is a playful mix of Zettelkasten, zettai (絶対, Japanese for absolute!) and castin (casting) — displaying something upon a screen.</p>
     </section>
-
     <section id="section-log" class="hidden max-w-7xl mx-auto mt-8 text-gray-700">
       <h2 class="text-2xl font-semibold mb-4">Write a Log Entry & GeoJSON</h2>
       <div id="log-container" class="flex gap-4">
@@ -151,6 +149,14 @@
       saveMarkers();
     }
 
+    // Helper to open Street View at marker's location
+    function openStreetViewForMarker(marker) {
+      if (!marker) return;
+      const latlng = marker.getLatLng();
+      const streetViewUrl = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${latlng.lat},${latlng.lng}`;
+      window.open(streetViewUrl, '_blank');
+    }
+
     function createEditablePopupContent(marker) {
       const container = document.createElement('div');
       container.className = 'note-popup';
@@ -159,6 +165,15 @@
       textarea.placeholder = "Write your note here...";
       textarea.value = marker.note || '';
       container.appendChild(textarea);
+
+      // Street View button
+      const streetViewBtn = document.createElement('button');
+      streetViewBtn.textContent = 'Open Street View';
+      streetViewBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded mt-2 mr-2';
+      streetViewBtn.onclick = function() {
+        openStreetViewForMarker(marker);
+      };
+      container.appendChild(streetViewBtn);
 
       const closeBtn = document.createElement('button');
       closeBtn.className = 'close-btn'; closeBtn.title = 'Close'; closeBtn.innerHTML = '&times;';
@@ -251,7 +266,49 @@
     }
     tabMap.onclick=()=>activateTab('map'); tabAbout.onclick=()=>activateTab('about'); tabLog.onclick=(()=>activateTab('log'));
     btnToggleSat.onclick=(()=>{ if(map.hasLayer(osm)){map.removeLayer(osm);map.addLayer(sat);btnToggleSat.classList.add('active');} else {map.removeLayer(sat);map.addLayer(osm);btnToggleSat.classList.remove('active');}});
-    window.addEventListener('keydown', e=>{ if(document.activeElement.tagName==='TEXTAREA') return; switch(e.key.toLowerCase()){ case 'w': if(lastMousePos){const latlng=map.containerPointToLatLng(lastMousePos);addMarker(latlng.lat,latlng.lng);} break; case 'x': if(selectedMarker){map.removeLayer(selectedMarker);markers=markers.filter(m=>m!==selectedMarker);selectedMarker=null;saveMarkers();} break; case 'c': clearMarkers(); break; case 's': btnToggleSat.click(); break; case 'm': activateTab('map'); break; case 'a': activateTab('about'); break; case 'l': activateTab('log'); break;} });
+    
+    // Keyboard shortcuts (including v for Street View)
+    window.addEventListener('keydown', e=>{
+      if(document.activeElement.tagName==='TEXTAREA') return;
+      switch(e.key.toLowerCase()){
+        case 'w':
+          if(lastMousePos){
+            const latlng=map.containerPointToLatLng(lastMousePos);
+            addMarker(latlng.lat,latlng.lng);
+          }
+          break;
+        case 'x':
+          if(selectedMarker){
+            map.removeLayer(selectedMarker);
+            markers=markers.filter(m=>m!==selectedMarker);
+            selectedMarker=null;
+            saveMarkers();
+          }
+          break;
+        case 'c':
+          clearMarkers();
+          break;
+        case 's':
+          btnToggleSat.click();
+          break;
+        case 'm':
+          activateTab('map');
+          break;
+        case 'a':
+          activateTab('about');
+          break;
+        case 'l':
+          activateTab('log');
+          break;
+        case 'v':
+          // Street View for selected marker
+          if(selectedMarker){
+            openStreetViewForMarker(selectedMarker);
+          }
+          break;
+      }
+    });
+
     // Initialize
     loadMarkers(); activateTab('map');
   </script>
