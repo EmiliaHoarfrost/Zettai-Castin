@@ -29,7 +29,8 @@ Built with:
 - 🔄 Toggle between standard and satellite map views.
 - 💾 Auto-saving of notes to local storage.
 - 🧭 Keyboard shortcuts for navigation and actions.
-
+- 🌍 Street View from any marker.
+  
 ## 🧭 Keyboard Shortcuts
 
 | Key | Action                          |
@@ -41,6 +42,8 @@ Built with:
 | `M` | Switch to Map tab               |
 | `L` | Switch to Log tab               |
 | `A` | Switch to About tab             |
+| `V` | Toggle Street View in new tab   |
+
 
 ## 🚀 Getting Started
 
